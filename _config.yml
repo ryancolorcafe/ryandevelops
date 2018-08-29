@@ -1,0 +1,45 @@
+title: Ryan Brown
+email: ryancolorcafe@gmail.com
+description: >
+  My portfolio and musings on all ranges of programming topics, mainly Ruby on Rails.
+baseurl: ""
+url: https://ryandevelops.com
+github_username: ryancolorcafe
+linked_in_profile: https://www.linkedin.com/in/ryanebrown/
+full_name: Ryan Brown
+user_description: Software Engineer
+
+# Build settings
+markdown: kramdown
+theme: jekyll-theme-collider
+plugins:
+  - jekyll-paginate-v2
+exclude:
+  - Gemfile
+  - Gemfile.lock
+
+# Collection configurations
+collections:
+  blog_posts:
+    output: true
+    permalink: /collection/:name
+  blog_tags:
+
+# Pagination Settings
+pagination:
+  enabled: true
+  per_page: 3
+  permalink: '/:num/'
+  title: ':title'
+  limit: 0
+  sort_field: 'date'
+  sort_reverse: true
+  collection: 'blog_posts'
+  trail:
+    before: 2
+    after: 2
+
+permalink: pretty
+
+sass:
+  sass_dir: _sass
