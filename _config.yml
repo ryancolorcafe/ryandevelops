@@ -8,6 +8,8 @@ github_username: ryancolorcafe
 linked_in_profile: https://www.linkedin.com/in/ryanebrown/
 full_name: Ryan Brown
 user_description: Software Engineer
+disqus:
+  shortname: ryandevelops-com
 
 # Build settings
 markdown: kramdown
