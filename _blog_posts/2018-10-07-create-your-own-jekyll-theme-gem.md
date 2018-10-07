@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  Create your own Jekyll theme gem
-date:   2018-10-07 08:39:09 -0700
+date:   2018-10-07 11:27:09 -0700
 tags:   jekyll
 ---
 
@@ -169,7 +169,7 @@ Once you've created your next round of changes and want to push it up to your ge
 
 That's all there is to it.
 
-And since this may be the first of many gem versions you publish, I'd recommend creating a `CHANGELOG.md` file to highlight what has changed with each release. Take a look at [this site](https://keepachangelog.com) for more info on chagelogs.
+And since this may be the first of many gem versions you publish, I'd recommend creating a `CHANGELOG.md` file to highlight what has changed with each release. Take a look at [this site](https://keepachangelog.com) for more info on changelogs.
 
 ## Wohoo!🍾
 
