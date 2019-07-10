@@ -12,7 +12,7 @@ tags:   ruby
 {% endif %}
 
 
-If you are looking to step up your RSpec knowledge, I definitely recommend ["Effective Testing with RSpec 3"](https://pragprog.com/book/rspec3/effective-testing-with-rspec-3), by Myron Marston and Ian Dees. In this post I'll sum up my main takeaways from the book, covering the motivations for testing, what makes for a good test, and describing the main types of specs you should focus on.
+If you are looking to step up your RSpec knowledge, I definitely recommend ["Effective Testing with RSpec 3"](https://pragprog.com/book/rspec3/effective-testing-with-rspec-3) by Myron Marston and Ian Dees. In this post I'll sum up my main takeaways from the book, covering the motivations for testing, what makes for a good test, and describing the main types of specs you should focus on.
 
 <!-- more -->
 
@@ -33,7 +33,7 @@ A key factor of a good test according to the book is that they aren't too strict
 
 <blockquote>"Rather than asserting that an error message exactly matches a particular string ('Could not find user with ID 123'), consider using substrings to match just the key parts ('Could not find user')."</blockquote>
 
-Even small modifications like that can make for a much more pleasant coding experience, the authors claim. They also warn not to make your tests too specifically to elements in your UI, as the UI tends to change frequently and can cause more headaches down the road.
+Even small modifications like that can make for a much more pleasant coding experience, the authors claim. They also warn not to couple your tests too specifically to the elements in your UI, as the UI tends to change frequently and can cause more headaches down the road.
 
 ### The test is necessary
 A good test is also one that is truly necessary. Over-testing can increase the chance of breaking other tests you thought were unconnected and make test suites take a really long time to run. They quote Kent Beck, who states:
@@ -42,7 +42,7 @@ A good test is also one that is truly necessary. Over-testing can increase the c
 
 Or as the authors themselves put it, they ask the following question before deciding whether or not to write a test:
 
-<blockquote>“Does this test pay for the cost of writing and running it?”</blockquote>
+<blockquote>"Does this test pay for the cost of writing and running it?"</blockquote>
 
 ### They are speedy and share code
 Keeping tests snappy means you get quicker feedback, which keeps you in the zone longer and increases your focus. Good test suites also make use of shared code whenever possible, avoiding bloat and creating less setup headaches for specs that are similar. These usually come in the form of let definitions, hooks, and helper methods.
@@ -62,7 +62,7 @@ Acceptance specs exercise a feature from beginning to end, which is great for te
 Unit specs focus strictly on the unit of code you are testing. These tend to be very fast tests since they often don't need to interact with the rest of your app. They're also very useful in that they can help guide the design of your code. However, they will not be as valuable as when looking to do a larger refactor of your code, since they won't tell you much except for the very specific code it is testing.
 
 ### Integration specs
-Integration specs are for external services, such as databases or third-party APIs. They can be tricky in that if you're writing something to a database, you may need to rollback any changes made so as not to affect other tests. Since they are allowed to call third party code (even if indirect), they are often much slower to run.
+Integration specs are for external services, such as databases or third-party APIs. They can be tricky in that if you're writing something to a database, for example, you may need to rollback any changes made so as not to affect other tests. Since they are allowed to call third party code (even if indirect), they are often much slower to run.
 
 ### Preferred spec types
 Unit specs are generally preferred as they are the fastest to run, easiest to write, and can be instrumental in designing your code. However, as mentioned above, they aren't as valuable in testing features end-to-end like an acceptance test. For acceptance tests, the authors recommend focusing on the happy path and keeping them spare otherwise. To reduce writing integration tests, their advice is:
