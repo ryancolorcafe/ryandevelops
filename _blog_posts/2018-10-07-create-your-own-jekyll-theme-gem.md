@@ -7,7 +7,7 @@ tags:   jekyll
 
 {% if page.path contains "#excerpt" %}
   <a href="{{site.url}}/collection/2018-10-07-create-your-own-jekyll-theme-gem">
-    ![Dr. Jekyll reading in the laboratory](../assets/images/dr-jekyll-reading-in-the-laboratory.jpg)
+    ![Dr. Jekyll reading in the laboratory](../../assets/images/dr-jekyll-reading-in-the-laboratory.jpg)
   </a>
 {% else %}
   ![Dr. Jekyll reading in the laboratory](../assets/images/dr-jekyll-reading-in-the-laboratory.jpg)
