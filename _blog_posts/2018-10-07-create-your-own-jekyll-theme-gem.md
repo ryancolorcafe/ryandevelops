@@ -171,6 +171,6 @@ That's all there is to it.
 
 And since this may be the first of many gem versions you publish, I'd recommend creating a `CHANGELOG.md` file to highlight what has changed with each release. Take a look at [this site](https://keepachangelog.com) for more info on changelogs.
 
-## Wohoo!🍾
+## Woohoo!🍾
 
 Amazing, you've now created your very own Jekyll gem theme! It's a great feeling to contribute to open-source and have a bundle of code out there that you created and someone can possibly benefit from. Please [contact me](https://ryandevelops.com/contact) or comment below if you have any questions about this article or how to create your own gem theme, I'm happy to help!

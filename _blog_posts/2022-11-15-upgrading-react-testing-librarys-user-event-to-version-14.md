@@ -21,7 +21,7 @@ As explained in the `user-event` docs:
 
 <blockquote>"user-event is a companion library for Testing Library that simulates user interactions by dispatching the events that would happen if the interaction took place in a browser."</blockquote>
 
-To sum up, this library helps to closely mimick how the user interacts with the browser and makes for better tests.
+To sum up, this library helps to closely mimic how the user interacts with the browser and makes for better tests.
 
 # Why should we use it?
 
@@ -83,7 +83,6 @@ test("clicking checkbox", () => {
 Now that we have a reference of what we were doing before, let's get to how we should do things going forward. As I mentioned above, the `setup` API is likely what will cause the most amount of code changes when you upgrade. You'll want to create a test utility like the following code I put into a file I named `setup.ts`:
 
 {% highlight ts %}
-
 import { render } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Options } from "@testing-library/user-event/dist/types/options";
@@ -99,7 +98,7 @@ This utility accepts a React component and some options, instantiates a `user` w
 
 {% highlight javascript %}
 import { screen } from "@testing-library/react";
-// make sure your test util import path is correct for your app
+// make sure to correct the import path for your app
 import { setup } from "@/util/testUtils/setup";
 
 test("clicking checkbox", async () => {
@@ -113,7 +112,7 @@ test("clicking checkbox", async () => {
 
 Notice a few differences from how we did things previously? Before we would import and call `userEvent` directly and call `render` with the component. Now we destructure `user` from `setup`, and call any `user-event` actions on `user`. Also notice we had to add an `async` in the test setup options, and are adding an `await` before `user.click`. Previously when calling `userEvent.click`, it would automatically wrap an `await` around the action. Not anymore. Now you have to be explicit about calling `await`. In my experience upgrading, although there may be a few rare cases where an `await` isn't needed, you can pretty much always assume you'll need it and default to using it.
 
-# `setup` options
+# Configuring `setup` options
 
 There are many `setup` [options](https://testing-library.com/docs/user-event/options) available for use. Let's take a look at an example of the options and how it affects our tests.
 
@@ -135,7 +134,7 @@ userEvent.type(
 );
 {% endhighlight %}
 
-Now, using `setup` we'd do something like the following:
+Now, using `setup` we'd do the following:
 
 {% highlight javascript %}
 const { user } = setup(<SomeComponent />, { skipClick: true });
@@ -208,7 +207,7 @@ This simulates the user hitting the escape key and then 'asdf', which helped me 
 
 I mostly just focused on fixing the breaking tests after upgrading, but since I was refactoring a lot of these tests to work with the new library version anyways, I looked for any easy refactors I could make along the way. If you haven't stumbled across this yet, bookmark this blog post by Kent C. Dodds: ["Common mistakes with React Testing Library"](https://kentcdodds.com/blog/common-mistakes-with-react-testing-library).
 
-A couple favorites of mine were to use [screen](https://kentcdodds.com/blog/common-mistakes-with-react-testing-library#not-using-screen) instead of destructuring, and to use [find\* queries instead of waitFor](https://kentcdodds.com/blog/common-mistakes-with-react-testing-library#using-waitfor-to-wait-for-elements-that-can-be-queried-with-find). Again, not necessary, but perhaps a good opportunity to do some cleanup and use queries that return better error messages, saving you time when debugging your tests.
+A couple favorites of mine were to use [screen](https://kentcdodds.com/blog/common-mistakes-with-react-testing-library#not-using-screen) instead of destructuring, and to use [find* queries instead of waitFor](https://kentcdodds.com/blog/common-mistakes-with-react-testing-library#using-waitfor-to-wait-for-elements-that-can-be-queried-with-find). Again, not necessary, but perhaps a good opportunity to do some cleanup and use queries that return better error messages, saving you time when debugging your tests.
 
 # Conclusion
 
