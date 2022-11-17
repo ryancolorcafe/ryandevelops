@@ -39,29 +39,13 @@ Before you attempt an upgrade, be sure to take a good look at the "Breaking Chan
 
 # How to upgrade
 
-Upgrade the package by running:
+Upgrade the package with yarn by running: `yarn upgrade @testing-library/user-event`
 
-{% highlight shell %}
-yarn upgrade @testing-library/user-event
-{% endhighlight %}
-
-or:
-
-{% highlight shell %}
-npm update @testing-library/user-event
-{% endhighlight %}
+Or upgrade via npm: `npm update @testing-library/user-event`
 
 The first thing I'd do after upgrading is to run your tests to get an idea of how much work you have ahead of you:
 
-{% highlight shell %}
-yarn test
-{% endhighlight %}
-
-or:
-
-{% highlight shell %}
-npm test
-{% endhighlight %}
+`yarn test` or `npm test`
 
 In my case, after upgrading I had about 18% of tests failing. Most tests should pass because calling `userEvent` directly calls the new `setup` API under the hood. This call to `setup` behind the scenes was included specifically to help make the transition to version 14 easier. I'll show you how we should use `setup` going forward.
 
