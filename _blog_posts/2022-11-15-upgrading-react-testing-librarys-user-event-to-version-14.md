@@ -15,7 +15,7 @@ In this article I'll go over how to upgrade Testing Library's [user-event](https
 
 <!-- more -->
 
-# What is `user-event`?
+# What is user-event?
 
 As explained in the `user-event` docs:
 
@@ -31,7 +31,7 @@ Previously, [fireEvent](https://testing-library.com/docs/dom-testing-library/api
 
 Some of these interactions will be missed with `fireEvent`, and that could be problematic for your tests. As mentioned in the docs, there are still a few rare cases where `fireEvent` may be needed, but in most cases `user-event` should be used.
 
-# What's new in `user-event` 14?
+# What's new in user-event 14?
 
 You can see most of the changes that come with version 14 on the [releases page](https://github.com/testing-library/user-event/releases/tag/v14.0.0). Besides lots of other smaller features and bug fixes, the biggest change is the [setup](https://testing-library.com/docs/user-event/setup) API, which allows you to configure options for each instance that the `user-event` library is used. More on this below.
 
@@ -112,7 +112,7 @@ test("clicking checkbox", async () => {
 
 Notice a few differences from how we did things previously? Before we would import and call `userEvent` directly and call `render` with the component. Now we destructure `user` from `setup`, and call any `user-event` actions on `user`. Also notice we had to add an `async` in the test setup options, and are adding an `await` before `user.click`. Previously when calling `userEvent.click`, it would automatically wrap an `await` around the action. Not anymore. Now you have to be explicit about calling `await`. In my experience upgrading, although there may be a few rare cases where an `await` isn't needed, you can pretty much always assume you'll need it and default to using it.
 
-# Configuring `setup` options
+# Configuring setup options
 
 There are many `setup` [options](https://testing-library.com/docs/user-event/options) available for use. Let's take a look at an example of the options and how it affects our tests.
 
@@ -152,7 +152,7 @@ await user.type(
 
 Instead of passing a `skipClick` option for every single event, `{ skipClick: true }` is applied to the entire instance of `setup`. This can be handy for tricky situations like needing to change the [keyboard layout](https://testing-library.com/docs/user-event/options#keyboardmap) for an entire test.
 
-# How I fixed a test using a `setup` option
+# How I fixed a test using a setup option
 
 Remember how I said to take a close look at the "Breaking Changes" section on the releases page? I did not and struggled to figure out why one of our existing tests wasn't working.
 
@@ -186,7 +186,7 @@ const { user } = setup(<ImportQuoteRequests {...props} />, {
 
 That was the only thing that needed to change. So beware of the power of `setup` configurations.
 
-# How I fixed a test using `keyboard`
+# How I fixed a test using keyboard
 
 Let's take a look at another test that broke after upgrading and how I went about solving it. I had a test where I wanted to make sure someone couldn't submit an invalid date via an input. Previously I was using `userEvent.type` to input an invalid date:
 
