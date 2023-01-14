@@ -58,7 +58,7 @@ The Dictionary application will handle retreiving a random word from an array of
 
 This is clearly a much better organization of our code if we want to make it scalable and modular. Now let's get into how we can improve the efficiency of our code using the abstractions available in Elixir and OTP.
 
-**Making the Dictionary an Agent**
+# Making the Dictionary an Agent
 
 While our code now has a nice separation of concerns, we need to consider its scalability. Imagine that this hangman game becomes very popular and has millions of users playing at the same time. For each new hangman game that was started, we'd need the Dictionary to read from the database to get the list of possible words to start a game with, which would be quite costly in terms of performance.
 
@@ -140,7 +140,7 @@ end
 
 At this point in the tutorial, in the terminal you'd need to run `iex -S mix` at the root of Dictionary, then `{:ok, :pid} = Dictionary.start_link`, and finally `Dictionary.random_word(pid)` in order to get a random word. This is not a great API experience. We'll look at improving this in the next section.
 
-**Applications: Making Our Code Independent**
+# Applications: Making Our Code Independent
 
 Even though our code has a nice separation of concerns, each concern is not running as its own independent process. This means we're missing out on all of the great features Elixir has to offer that helps to make our code more modular.
 
@@ -192,7 +192,7 @@ end
 
 This is needed so that when we use `mix` to start the Dictionary, it knows where to look to start the Application. So now Dictionary has the ability to start itself when running `iex -S mix` at the root. You can now call `Dictionary.random_word` to get a random word. That is a much easier API to work with.
 
-**Add a Supervisor to Dictionary**
+# Add a Supervisor to Dictionary
 
 Now that Dictionary is an Application, it has the ability to manage its own lifecycle. However, to implement this we will need to add a [Supervisor](https://hexdocs.pm/elixir/1.12/Supervisor.html). Thomas uses the analogy of kids at a playground (processes) and the nannies who are watching over the children (supervisors):
 
@@ -248,7 +248,7 @@ end
 
 So now if the Dictionary Agent were to crash for whatever reason, a new process will spin up in its place thanks to the Supervisor. This is what is meant by Elixir being 'fault-tolerant'. One part of the system can crash, but it doesn't have to crash the other parts of your app and everything can continue running as normal once the failing process is restarted.
 
-**Review of how things are working so far**
+# Review of how things are working so far
 
 When we invoke `mix run` in the root of our Dictionary, here's what's happening in terms of processes:
 
@@ -296,7 +296,7 @@ With that line, `mix` now knows to look to the `application.ex` file to start th
 
 That is the current way the Dictionary code runs, now let's take a look at how we can give Hangman a more independent existence.
 
-**Make Hangman a Server**
+# Make Hangman a Server
 
 To make Hangman (synonymous to mentions of 'Game' above) more independent, Thomas recommends using a GenServer (aka "generic server"). This is how GenServer is defined in [hexdocs](https://hexdocs.pm/elixir/GenServer.html):
 
@@ -391,7 +391,7 @@ end
 
 Now Hangman is running in its own process and mantaining its own state internally. Looking forward, let's see how we can further make Hangman more independent.
 
-**Make Hangman its own Service**
+# Make Hangman its own Service
 
 Currently when we make a call from the UI, the hangman game server will live inside the UI process. It would be better if Game ran in its own node instead of being included with the client. We currently have a structure like this:
 
@@ -413,7 +413,7 @@ The flow of the code will look like the following, the key part here being the D
 
 ![Dynamic Supervisor diagram](../assets/images/dynamic-supervisor-diagram.png)
 
-**How to implement a Dynamic Supervisor in Hangman**
+# How to implement a Dynamic Supervisor in Hangman
 
 First we'll create an `application.ex` file in our hangman game code:
 
@@ -506,7 +506,7 @@ end
 
 So now when we run `iex -S mix` in the terminal and then run `Hangman.Runtime.Application.start_game`, a new game will be dynamically created and supervised. At this point we have a service that runs on its own node and any number of clients can connect to it and ask for a new game. Now Game has a much more independent existence.
 
-**To sum up**
+# To sum up
 
 Agents, DynamicSuperivisors, and GenServers, oh my. That was a lot to cover in one course. This doesn't even take into consideration the sections of the course that deal with Phoenix and LiveView. But here's a few bullet points to take with you:
 
