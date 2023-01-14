@@ -23,28 +23,28 @@ Thomas first suggests the option of throwing everything together in one file, so
 
 {% highlight elixir %}
 function getword() {
-// ...
+  // ...
 }
 
 function getPlayerGuess() {
-// ...
+  // ...
 }
 
 function reportScore() {
-// ...
+  // ...
 }
 
 function scoreMove ()) {
-// ...
+  // ...
 }
 
 function main() {
-getWord()
-while (!done) {
-getPlayerGuess()
-scoreMove()
-reportScore()
-}
+  getWord()
+  while (!done) {
+    getPlayerGuess()
+    scoreMove()
+    reportScore()
+  }
 }
 {% endhighlight %}
 
@@ -52,7 +52,7 @@ While certainly doable, and nice and compact, it lacks the ability to have async
 
 The next option he suggests is to split up the code into separate independent applications:
 
-![[Screenshot 2022-12-15 at 2.28.23 PM.png]]
+![Code architecture diagram](../assets/images/code-architecture.png)
 
 The Dictionary application will handle retreiving a random word from an array of words. The Game application will handle all of the game logic, such as determining good and bad guesses, calculating how many turns you have left, and if you've won or lost the game. Finally, the UI application will handle user inputs, such as when a user wants to start a new game or input a letter to guess.
 
@@ -74,13 +74,15 @@ So basically it is a way to keep state readily available, which suits our use-ca
 
 Without an Agent, at this point the Dictionary receives instructions to `start` a new game, which then calls the database like so:
 
-![[Screenshot 2022-12-15 at 10.10.27 AM.png]]
+![Dictionary architecture diagram 1](../assets/images/dictionary-architecture-1.png)
 
 This retrieves the word list we want from the database, which we then pass to a `random_word` function in the Dictionary to get the word we want:
-![[Screenshot 2022-12-15 at 9.56.11 AM.png]]
+
+![Dictionary architecture diagram 2](../assets/images/dictionary-architecture-2.png)
 
 What we want to do is put the Agent between the Dictionary and the database :
-![[Screenshot 2022-12-15 at 9.56.40 AM.png]]
+
+![Dictionary architecture diagram 3](../assets/images/dictionary-architecture-3.png)
 
 That way anytime we need to access the list of words for the game, we only have to hit the database if there isn't an Agent already running. After an Agent has been spun up, we can just go to the Agent to get our list of words which will be much more performant.
 
@@ -88,18 +90,14 @@ Previously, our Dictionary code called the implementation code directly like the
 
 {% highlight elixir %}
 defmodule Dictionary do
+  # alias for our implementation code
+  alias Dictionary.Impl.WordList
 
-# alias for our implementation code
+  # retrieves the list of words
+  defdelegate start, to: WordList, as: :word_list
 
-alias Dictionary.Impl.WordList
-
-# retrieves the list of words
-
-defdelegate start, to: WordList, as: :word_list
-
-# returns a random word from the list above
-
-defdelegate random_word(word_list), to: WordList
+  # returns a random word from the list above
+  defdelegate random_word(word_list), to: WordList
 end
 {% endhighlight %}
 
@@ -107,18 +105,18 @@ In order to add an Agent, now we need to wrap our calls to the implementation co
 
 {% highlight elixir %}
 defmodule Dictionary.Runtime.Server do
+  # alias for our implementation code
+  alias Dictionary.Impl.WordList
 
-# alias for our implementation code
+  def start_link do
+    # starts the Agent
+    Agent.start_link(&WordList.word_list/0)
+  end
 
-alias Dictionary.Impl.WordList
-
-def start_link do # starts the Agent
-Agent.start_link(&WordList.word_list/0)
-end
-
-def random_word(pid) do # retrieves our desired value from the Agent
-Agent.get(pid, &WordList.random_word/1)
-end
+  def random_word(pid) do
+    # retrieves our desired value from the Agent
+    Agent.get(pid, &WordList.random_word/1)
+  end
 end
 {% endhighlight %}
 
@@ -130,15 +128,13 @@ Then we'll also need to modify our original `Dictionary` module to:
 
 {% highlight elixir %}
 defmodule Dictionary do
-alias Dictionary.Runtime.Server
+  alias Dictionary.Runtime.Server
 
-# now `start_link` instead of `start`, points to `Server`
+  # now `start_link` instead of `start`, points to `Server`
+  defdelegate start_link, to: Server
 
-defdelegate start_link, to: Server
-
-# similar to before but now we point to `Server`
-
-defdelegate random_word(word_list), to: Server
+  # similar to before but now we point to `Server`
+  defdelegate random_word(word_list), to: Server
 end
 {% endhighlight %}
 
@@ -154,14 +150,12 @@ Giving the ability for each concern to start and manage its own lifecycle is how
 
 {% highlight elixir %}
 defmodule Dictionary.Runtime.Application do
+  # provides necessary default configurations
+  use Application
 
-# provides necessary default configurations
-
-use Application
-
-def start(\_type, \_args) do
-Dictionary.Runtime.Server.start_link()
-end
+  def start(_type, _args) do
+    Dictionary.Runtime.Server.start_link()
+  end
 end
 {% endhighlight %}
 
@@ -169,20 +163,20 @@ Then in the `Dictionary.Runtime.Server` module, where we implemented the Agent a
 
 {% highlight elixir %}
 defmodule Dictionary.Runtime.Server do
+  # __MODULE__ is shorthand for `Dictionary.Runtime.Server`
+  @me __MODULE__
 
-# **MODULE** is shorthand for `Dictionary.Runtime.Server`
+  alias Dictionary.Impl.WordList
 
-@me **MODULE**
+  def start_link do
+    # notice we add `name` as an arg
+    Agent.start_link(&WordList.word_list/0, name: @me)
+  end
 
-alias Dictionary.Impl.WordList
-
-def start_link do # notice we add `name` as an arg
-Agent.start_link(&WordList.word_list/0, name: @me)
-end
-
-def random_word() do # notice @me is added as an arg
-Agent.get(@me, &WordList.random_word/1)
-end
+  def random_word() do
+    # notice @me is added as an arg
+    Agent.get(@me, &WordList.random_word/1)
+  end
 end
 {% endhighlight %}
 
@@ -190,9 +184,9 @@ Finally, in our mix.exs file we need to add the following:
 
 {% highlight elixir %}
 def application do
-[
-mod: { Dictionary.Runtime.Application, [] },
-]
+  [
+    mod: { Dictionary.Runtime.Application, [] },
+  ]
 end
 {% endhighlight %}
 
@@ -202,7 +196,7 @@ This is needed so that when we use `mix` to start the Dictionary, it knows where
 
 Now that Dictionary is an Application, it has the ability to manage its own lifecycle. However, to implement this we will need to add a [Supervisor](https://hexdocs.pm/elixir/1.12/Supervisor.html). Thomas uses the analogy of kids at a playground (processes) and the nannies who are watching over the children (supervisors):
 
-![[Screenshot 2022-12-15 at 11.31.21 AM.png]]
+![Supervisor diagram](../assets/images/supervisor.png)
 
 If a child falls over, the nannies are there to pick them up. In the same way, supervisors are given processes to look after, and if any of their processes crash they are there to help get them running again.
 
@@ -212,23 +206,23 @@ To implement a Supervisor in Dictionary, our `application.ex` file will be modif
 
 {% highlight elixir %}
 defmodule Dictionary.Runtime.Application do
-use Application
+  use Application
 
-def start(\_type, \_args) do # the children our Supervisor will watch over
-children = [
-{ Dictionary.Runtime.Server, [] }
-]
+  def start(_type, _args) do
+	# the children our Supervisor will watch over
+    children = [
+      { Dictionary.Runtime.Server, [] }
+    ]
 
-    # give the Supervisor a name and a strategy
+	# give the Supervisor a name and a strategy
     options = [
       name: Dictionary.Runtime.Supervisor,
       strategy: :one_for_one,
     ]
 
-    # we pass our Server module into a `Supervisor`
+	# we pass our Server module into a `Supervisor`
     Supervisor.start_link(children, options)
-
-end
+  end
 end
 {% endhighlight %}
 
@@ -236,21 +230,19 @@ A couple of small changes will need to be made in our `server.ex` file as well:
 
 {% highlight elixir %}
 defmodule Dictionary.Runtime.Server do
-@me **MODULE**
+  @me __MODULE__
 
-# this provides necessary defaults needed when using a Supervisor
+  # this provides necessary defaults needed when using a Supervisor
+  use Agent
 
-use Agent
+  alias Dictionary.Impl.WordList
 
-alias Dictionary.Impl.WordList
+  # adding ignored `options` argument from Supervisor `(_)`
+  def start_link(_) do
+    Agent.start_link(&WordList.word_list/0, name: @me)
+  end
 
-# adding ignored `options` argument from Supervisor `(_)`
-
-def start*link(*) do
-Agent.start_link(&WordList.word_list/0, name: @me)
-end
-
-...
+  ...
 end
 {% endhighlight %}
 
@@ -260,45 +252,44 @@ So now if the Dictionary Agent were to crash for whatever reason, a new process 
 
 When we invoke `mix run` in the root of our Dictionary, here's what's happening in terms of processes:
 
-![[Screenshot 2022-12-15 at 11.43.05 AM.png]]
+![Mix run flow](../assets/images/mix-run-flow.png)
 
 First we start at the `mix.exs file`, where we get the project settings such as which version of Elixir to use, what applications to run, and what dependencies to include. Here's how Dictionary's `mix.exs` file looks at this point:
 
 {% highlight elixir %}
 defmodule Dictionary.MixProject do
-use Mix.Project
+  use Mix.Project
 
-def project do
-[
-app: :dictionary,
-version: "0.1.0",
-elixir: "~> 1.12",
-start_permanent: Mix.env() == :prod,
-deps: deps()
-]
-end
+  def project do
+    [
+      app: :dictionary,
+      version: "0.1.0",
+      elixir: "~> 1.12",
+      start_permanent: Mix.env() == :prod,
+      deps: deps()
+    ]
+  end
 
-def application do
-[ # this tells mix to include `Dictionary.Runtime.Application`
-mod: {Dictionary.Runtime.Application, []},
-extra_applications: [:logger]
-]
-end
+  def application do
+    [
+	  # this tells mix to include `Dictionary.Runtime.Application`
+      mod: {Dictionary.Runtime.Application, []},
+      extra_applications: [:logger]
+    ]
+  end
 
-# Run "mix help deps" to learn about dependencies.
-
-defp deps do
-[
-...
-]
-end
+  defp deps do
+    [
+      ...
+    ]
+  end
 end
 {% endhighlight %}
 
 The key line here is:
 
 {% highlight elixir %}
-mod: {Dictionary.Runtime.Application, []},
+  mod: {Dictionary.Runtime.Application, []},
 {% endhighlight %}
 
 With that line, `mix` now knows to look to the `application.ex` file to start the application. In `application.ex` we have a Supervisor that is told to watch over our `server.ex` file. Finally, in `server.ex` we create an `Agent` with `start_link` and make calls to get a random word with `Agent.get`. Each step along the way we are creating processes.
@@ -315,22 +306,20 @@ To make Hangman (synonymous to mentions of 'Game' above) more independent, Thoma
 
 A GenServer is a good fit for Hangman as it provides an external API (code that runs in the client) and internal callbacks (server process), and helps to abstract common client-server interactions:
 
-![[Screenshot 2022-12-15 at 11.50.29 AM.png]]
+![GenServer diagram](../assets/images/genserver-diagram.png)
 
 As we start out, our `hangman.ex` file looks like so, similar to how we started with Dictionary, we are directly making calls to our implementation code (implementation code not shown, imagine the function names accurately describe their purpose):
 
 {% highlight elixir %}
 defmodule Hangman do
+  # alias to our implementation code
+  alias Hangman.Impl.Game
 
-# alias to our implementation code
+  defdelegate new_game, to: Game
 
-alias Hangman.Impl.Game
-
-defdelegate new_game, to: Game
-
-defdelegate make_move(game, guess), to: Game
-
-defdelegate tally(game), to: Game
+  defdelegate make_move(game, guess), to: Game
+  
+  defdelegate tally(game), to: Game
 end
 {% endhighlight %}
 
@@ -338,45 +327,38 @@ To implement a GenServer, we'll add a `server.ex` file in Hangman with:
 
 {% highlight elixir %}
 defmodule Hangman.Runtime.Server do
+  # alias for our implementation code
+  alias Hangman.Impl.Game
 
-# alias for our implementation code
+  # provides necessary defaults
+  use GenServer
 
-alias Hangman.Impl.Game
+  ### client process
 
-# provides necessary defaults
+  # note the addition of `GenServer` code here
+  def start_link do
+    # starts GenServer
+    GenServer.start_link(__MODULE__, nil) 
+  end
 
-use GenServer
+  ### server process
+  
+  # returns initial state
+  # ignored variable (_) is unneeded `nil`, option in `start_link`
+  def init(_) do
+    { :ok, Game.new_game }
+  end
 
-### client process
+  # triggered if the client sends a message with :make_move
+  def handle_call({ :make_move, guess }, _from, game) do
+    { updated_game, tally } = Game.make_move(game, guess) 
+    { :reply, tally, updated_game }
+  end
 
-# note the addition of `GenServer` code here
-
-def start_link do # starts GenServer
-GenServer.start_link(**MODULE**, nil)
-end
-
-### server process
-
-# returns initial state
-
-# ignored variable (\_) is unneeded `nil`, option in `start_link`
-
-def init(\_) do
-{ :ok, Game.new_game }
-end
-
-# triggered if the client sends a message with :make_move
-
-def handle_call({ :make_move, guess }, \_from, game) do
-{ updated_game, tally } = Game.make_move(game, guess)
-{ :reply, tally, updated_game }
-end
-
-# triggered if the client sends a message with :tally
-
-def handle_call({ :tally }, \_from, game) do
-{ :reply, Game.tally(game), game }
-end
+  # triggered if the client sends a message with :tally
+  def handle_call({ :tally }, _from, game) do
+    { :reply, Game.tally(game), game } 
+  end
 end
 {% endhighlight %}
 
@@ -384,20 +366,26 @@ In `hangman.ex`, our implementation code, we'd update it to:
 
 {% highlight elixir %}
 defmodule Hangman do
-alias Hangman.Runtime.Server
+  alias Hangman.Runtime.Server
 
-def new_game do # previously we called directly to our implementation # now we call Server.start_link()
-{ :ok, pid } = Server.start_link()
-pid
-end
+  def new_game do
+	# previously we called directly to our implementation
+	# now we call Server.start_link()
+    { :ok, pid } = Server.start_link()
+    pid
+  end
 
-def make_move(game, guess) do # previously directly called our implementation code # now we perform a `GenServer.call`
-GenServer.call(game, { :make_move, guess })
-end
-
-def tally(game) do # previously directly called our implementation code # now we perform a `GenServer.call`
-GenServer.call(game, { :tally })
-end
+  def make_move(game, guess) do
+	# previously directly called our implementation code
+    # now we perform a `GenServer.call`
+    GenServer.call(game, { :make_move, guess })
+  end
+  
+  def tally(game) do
+    # previously directly called our implementation code
+    # now we perform a `GenServer.call`
+    GenServer.call(game, { :tally })
+  end
 end
 {% endhighlight %}
 
@@ -407,10 +395,11 @@ Now Hangman is running in its own process and mantaining its own state internall
 
 Currently when we make a call from the UI, the hangman game server will live inside the UI process. It would be better if Game ran in its own node instead of being included with the client. We currently have a structure like this:
 
-![[Screenshot 2022-12-15 at 1.28.36 PM.png]]
+![Hangman diagram start](../assets/images/hangman-diagram-start.png)
 
 What we'd like is:
-![[Screenshot 2022-12-15 at 1.47.29 PM.png]]
+
+![Hangman diagram end](../assets/images/hangman-diagram-end.png)
 
 There are a few reasons why separating Game into its own node might be a good idea:
 • Special resources: Game might need access to special resources such as a database that we don't want the client to have access to.
@@ -422,7 +411,7 @@ In order to make Game its own Service, we’re going to create a 'Game creator' 
 
 The flow of the code will look like the following, the key part here being the Dynamic Supervisor, which as its name implies will dynamically create new hangman games each time it receives a request to do so:
 
-![[Screenshot 2022-12-15 at 1.48.29 PM.png]]
+![Dynamic Supervisor diagram](../assets/images/dynamic-supervisor-diagram.png)
 
 **How to implement a Dynamic Supervisor in Hangman**
 
@@ -430,27 +419,24 @@ First we'll create an `application.ex` file in our hangman game code:
 
 {% highlight elixir %}
 defmodule Hangman.Runtime.Application do
-@super_name GameStarter
+  @super_name GameStarter
 
-use Application
+  use Application
 
-# note the new `DynamicSupervisor` code below
-
-def start(\_type, \_args) do
-supervisor_spec = [
-{ DynamicSupervisor, strategy: :one_for_one, name: @super_name },
-]
+  # note the new `DynamicSupervisor` code below
+  def start(_type, _args) do
+    supervisor_spec = [
+      { DynamicSupervisor, strategy: :one_for_one, name: @super_name },
+    ]
 
     # this Supervisor will supervise the DynamicSupervisor
     Supervisor.start_link(supervisor_spec, strategy: :one_for_one)
+  end
 
-end
-
-# note the new `DynamicSupervisor` code below
-
-def start_game do
-DynamicSupervisor.start_child(@super_name, { Hangman.Runtime.Server, nil })
-end
+  # note the new `DynamicSupervisor` code below
+  def start_game do
+    DynamicSupervisor.start_child(@super_name,  { Hangman.Runtime.Server, nil })
+  end
 end
 {% endhighlight %}
 
@@ -458,14 +444,14 @@ Previously our `hangman.ex` code contained the following with a `new_game` funct
 
 {% highlight elixir %}
 defmodule Hangman do
-alias Hangman.Runtime.Server
-
-def new_game do
-{ :ok, pid } = Server.start_link()
-pid
-end
-
-...
+  alias Hangman.Runtime.Server
+  
+  def new_game do
+    { :ok, pid } = Server.start_link()
+    pid
+  end
+  
+  ...
 end
 {% endhighlight %}
 
@@ -473,14 +459,14 @@ Now we make `new_game` make a call to our new `application.ex` code:
 
 {% highlight elixir %}
 defmodule Hangman do
-...
+  ...
+  
+  def new_game do
+    { :ok, pid } = Hangman.Runtime.Application.start_game
+    pid
+  end
 
-def new_game do
-{ :ok, pid } = Hangman.Runtime.Application.start_game
-pid
-end
-
-...
+  ...
 end
 {% endhighlight %}
 
@@ -488,15 +474,14 @@ Small aside, we'll also need to pass an ignored option `(_)` to our `server.ex` 
 
 {% highlight elixir %}
 defmodule Hangman.Runtime.Server do
-...
+  ...
 
-# only the (\_) is new here
+  # only the (_) is new here
+  def start_link(_) do
+    GenServer.start_link(__MODULE__, nil)
+  end
 
-def start*link(*) do
-GenServer.start_link(**MODULE**, nil)
-end
-
-...
+  ...
 end
 {% endhighlight %}
 
@@ -504,19 +489,19 @@ Finally, we'll need to register our `Hangman.Runtime.Application` in our `mix.ex
 
 {% highlight elixir %}
 defmodule Hangman.MixProject do
-...
+  ...
 
-# the key line here is `mod`, aka 'module' where add the Application file
-
-def application do
-[
-mod: { Hangman.Runtime.Application, [] },
-extra_applications: [:logger]
-]
+  # the key line here is `mod`, aka 'module' where add the Application file
+  def application do
+    [
+      mod: { Hangman.Runtime.Application, [] },
+      extra_applications: [:logger]
+    ]
+  end
+  
+  ...
 end
 
-...
-end
 {% endhighlight %}
 
 So now when we run `iex -S mix` in the terminal and then run `Hangman.Runtime.Application.start_game`, a new game will be dynamically created and supervised. At this point we have a service that runs on its own node and any number of clients can connect to it and ask for a new game. Now Game has a much more independent existence.
