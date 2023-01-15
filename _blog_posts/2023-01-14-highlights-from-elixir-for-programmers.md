@@ -21,7 +21,7 @@ The course is specifically made for those who already have programming experienc
 
 Thomas first suggests the option of throwing everything together in one file, something like the following:
 
-{% highlight elixir %}
+{% highlight javascript %}
 function getword() {
   // ...
 }
@@ -34,7 +34,7 @@ function reportScore() {
   // ...
 }
 
-function scoreMove ()) {
+function scoreMove () {
   // ...
 }
 
@@ -64,11 +64,11 @@ While our code now has a nice separation of concerns, we need to consider its sc
 
 The first improvement Thomas suggests is making the Dictionary an Agent. What is an Agent? I'll include the definition from the [hexdocs](https://hexdocs.pm/elixir/Agent.html):
 
-> Agents are a simple abstraction around state.
+> "Agents are a simple abstraction around state.
 >
 > Often in Elixir there is a need to share or store state that must be accessed from different processes or by the same process at different points in time.
 >
-> The [`Agent`](https://hexdocs.pm/elixir/Agent.html#content) module provides a basic server implementation that allows state to be retrieved and updated via a simple API.
+> The [`Agent`](https://hexdocs.pm/elixir/Agent.html#content) module provides a basic server implementation that allows state to be retrieved and updated via a simple API."
 
 So basically it is a way to keep state readily available, which suits our use-case very well.
 
@@ -80,7 +80,7 @@ This retrieves the word list we want from the database, which we then pass to a 
 
 ![Dictionary architecture diagram 2](../assets/images/dictionary-architecture-2.png)
 
-What we want to do is put the Agent between the Dictionary and the database :
+What we want is to put the Agent between the Dictionary and the database:
 
 ![Dictionary architecture diagram 3](../assets/images/dictionary-architecture-3.png)
 
@@ -300,9 +300,9 @@ That is the current way the Dictionary code runs, now let's take a look at how w
 
 To make Hangman (synonymous to mentions of 'Game' above) more independent, Thomas recommends using a GenServer (aka "generic server"). This is how GenServer is defined in [hexdocs](https://hexdocs.pm/elixir/GenServer.html):
 
-> A behaviour module for implementing the server of a client-server relation.
+> "A behaviour module for implementing the server of a client-server relation.
 >
-> A GenServer is a process like any other Elixir process and it can be used to keep state, execute code asynchronously and so on. The advantage of using a generic server process (GenServer) implemented using this module is that it will have a standard set of interface functions and include functionality for tracing and error reporting. It will also fit into a supervision tree.
+> A GenServer is a process like any other Elixir process and it can be used to keep state, execute code asynchronously and so on. The advantage of using a generic server process (GenServer) implemented using this module is that it will have a standard set of interface functions and include functionality for tracing and error reporting. It will also fit into a supervision tree."
 
 A GenServer is a good fit for Hangman as it provides an external API (code that runs in the client) and internal callbacks (server process), and helps to abstract common client-server interactions:
 
