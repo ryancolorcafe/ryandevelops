@@ -402,10 +402,10 @@ What we'd like is:
 ![Hangman diagram end](../assets/images/hangman-diagram-end.png)
 
 There are a few reasons why separating Game into its own node might be a good idea:
-• Special resources: Game might need access to special resources such as a database that we don't want the client to have access to.
-• Security: maybe Game is handling some personal information such as credit card payments and we want to keep it as secure as possible.
-• Different deployment characteristics: say an engineering team wants to deploy code just to Game, without involving the client.
-• To reduce load on clients: maybe some clients don't have the capacity to run both the Game and Client code at the same time.
+- Special resources: Game might need access to special resources such as a database that we don't want the client to have access to.
+- Security: maybe Game is handling some personal information such as credit card payments and we want to keep it as secure as possible.
+- Different deployment characteristics: say an engineering team wants to deploy code just to Game, without involving the client.
+- To reduce load on clients: maybe some clients don't have the capacity to run both the Game and Client code at the same time.
 
 In order to make Game its own Service, we’re going to create a 'Game creator' that spits out new games every time a client asks. Then once the game has been created, the client and the new game will speak to each other directly. What we are calling a 'Game creator' will be what's referred to in Elixir as a [Dynamic Supervisor](https://hexdocs.pm/elixir/1.12/DynamicSupervisor.html).
 
