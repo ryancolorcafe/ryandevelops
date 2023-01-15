@@ -1,3 +1,3 @@
 ---
-color: purple
+color: elixir-purple
 ---
