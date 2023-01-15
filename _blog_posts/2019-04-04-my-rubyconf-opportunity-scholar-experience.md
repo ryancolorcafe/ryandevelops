@@ -6,9 +6,9 @@ tags:   ruby
 ---
 
 {% if page.path contains "#excerpt" %}
-  [<img src="../assets/images/rubyconf-walt-disney-music-hall.jpg" alt="Walt Disney Music Hall">]({{site.url}}/collection/2019-04-04-my-rubyconf-opportunity-scholar-experience)
+  [<img src="../../assets/images/rubyconf-walt-disney-music-hall.jpg" alt="Walt Disney Music Hall">]({{site.url}}/collection/2019-04-04-my-rubyconf-opportunity-scholar-experience)
 {% else %}
-  ![Walt Disney Music Hall](../../assets/images/rubyconf-walt-disney-music-hall.jpg)
+  ![Walt Disney Music Hall](../assets/images/rubyconf-walt-disney-music-hall.jpg)
 {% endif %}
 
 In November 2018 I had the pleasure of visiting sunny Los Angeles to attend [RubyConf](https://rubyconf.org/), my first-ever tech conference. I'll tell you about my experience of going as an Opportunity Scholar, some tips on how to get the most out of your experience, and why I think everyone should attend at least one tech conference.
