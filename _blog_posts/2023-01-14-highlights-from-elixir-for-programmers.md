@@ -506,7 +506,7 @@ end
 
 So now when we run `iex -S mix` in the terminal and then run `Hangman.Runtime.Application.start_game`, a new game will be dynamically created and supervised. At this point we have a service that runs on its own node and any number of clients can connect to it and ask for a new game. Now Game has a much more independent existence.
 
-# To sum up
+# To sum up...
 
 Agents, DynamicSuperivisors, and GenServers, oh my. That was a lot to cover in one course. This doesn't even take into consideration the sections of the course that deal with Phoenix and LiveView. But here's a few bullet points to take with you:
 
