@@ -508,7 +508,7 @@ So now when we run `iex -S mix` in the terminal and then run `Hangman.Runtime.Ap
 
 # To sum up...
 
-Agents, DynamicSuperivisors, and GenServers, oh my. That was a lot to cover in one course. This doesn't even take into consideration the sections of the course that deal with Phoenix and LiveView. But here's a few bullet points to take with you:
+Agents, DynamicSupervisors, and GenServers, oh my. That was a lot to cover in one course. This doesn't even take into consideration the sections of the course that deal with Phoenix and LiveView. But here's a few bullet points to take with you:
 
 - [Processes](https://elixir-lang.org/getting-started/processes.html) are what all Elixir code runs inside of. They are isolated from each other, run concurrent to one another and communicate via message passing.
 - [Agents](https://elixir-lang.org/getting-started/mix-otp/agent.html) are great for when multiple processes need to share or store state. We used one to help save a round trip to the database to get the list of words for the hangman game.
