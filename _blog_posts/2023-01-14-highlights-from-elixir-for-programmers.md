@@ -504,7 +504,7 @@ end
 
 {% endhighlight %}
 
-So now when we run `iex -S mix` in the terminal and then run `Hangman.Runtime.Application.start_game`, a new game will be dynamically created and supervised. At this point we have a service that runs on its own node and any number of clients can connect to it and ask for a new game. Now Game has a much more independent existence.
+So now when we run `iex -S mix` in the terminal and then run `Hangman.Runtime.Application.start_game`, a new game will be dynamically created and supervised. At this point we have a service that runs on its own node and any number of clients can connect to it and ask for a new game. Now Hangman has a much more independent existence.
 
 # To sum up...
 
