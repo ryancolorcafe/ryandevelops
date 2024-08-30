@@ -5,7 +5,11 @@ date: 2024-08-30 09:12:00 -0700
 tags: github, go, react
 ---
 
-# Automating Test Coverage Reporting in Go and React Using GitHub Actions
+{% if page.path contains "#excerpt" %}
+[<img src="../assets/images/test-coverage-report.png" alt="Test Coverage Report">]({{site.url}}/collection/2024-08-30-automating-test-coverage-reporting-in-go-and-react-using-github-actions)
+{% else %}
+![Test Coverage Report](../assets/images/test-coverage-report.png)
+{% endif %}
 
 ## Introduction: What is Test Coverage, and Why is it Important?
 
