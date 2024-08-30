@@ -2,7 +2,7 @@
 layout: post
 title: Automating Test Coverage Reporting in Go and React Using GitHub Actions
 date: 2024-08-30 09:12:00 -0700
-tags: github, go, react
+tags: github
 ---
 
 {% if page.path contains "#excerpt" %}
