@@ -15,6 +15,8 @@ tags: github, go, react
 
 We all know tests are crucial, but how many should you write? Should you aim for 100% coverage or just focus on critical parts? While there's no definitive answer, tracking your codebase's test coverage percentage is a valuable guide. Think of it like monitoring your weight: you don't have to step on the scale every day, but it helps to check in occasionally to ensure you're on track.
 
+<!-- more -->
+
 Monitoring test coverage helps you see if the code you're introducing is increasing or decreasing coverage. If a new feature causes a significant drop in coverage, it's a signal to consider adding more tests–unless there's a good reason not to, like dealing with a difficult-to-test third-party library.
 
 Many languages like Go and Jest offer built-in tools for generating detailed coverage reports. But what if you want to automate the comparison between your main branch and a new pull request (PR) to see how it impacts test coverage? Tools like [Codecov](https://about.codecov.io/) and [Code Climate](https://codeclimate.com/) offer this feature, leaving helpful comments on your PRs with the coverage impact.
@@ -35,14 +37,14 @@ The `test-main.yml` file is designed to run whenever there’s a push to the `ma
 
 {% highlight yaml %}
 on:
-  push:
-    branches:
-      - main
+push:
+branches: - main
 {% endhighlight %}
 
 When there is a push to `main`, this workflow will run tests, generate a code coverage report, and store it as a GitHub Artifact. For example:
 
 {% highlight yaml %}
+
 - name: Run tests with coverage
   run: go test -v -race -count=1 -coverprofile=coverage.out ./...
 
@@ -55,9 +57,9 @@ When there is a push to `main`, this workflow will run tests, generate a code co
 - name: Upload coverage report
   uses: actions/upload-artifact@v2
   with:
-    name: coverage-report
-    path: ./coverage-report.json
-{% endhighlight %}
+  name: coverage-report
+  path: ./coverage-report.json
+  {% endhighlight %}
 
 ### Setting Up the `test-pr.yml` File
 
@@ -65,18 +67,18 @@ The `test-pr.yml` file will run on every PR to `main` and compare the coverage o
 
 {% highlight yaml %}
 on:
-  pull_request:
-    branches:
-      - main
+pull_request:
+branches: - main
 {% endhighlight %}
 
 This workflow starts by running tests and generating a coverage report for the PR branch:
 
 {% highlight yaml %}
+
 - name: Install gocov
   run: |
-    go install github.com/axw/gocov/gocov@latest
-    echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+  go install github.com/axw/gocov/gocov@latest
+  echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
 
 - name: Run tests with coverage
   run: go test -v -race -count=1 -coverprofile=coverage.out ./...
@@ -86,19 +88,20 @@ This workflow starts by running tests and generating a coverage report for the P
 
 - name: Run gocov report for PR branch
   run: cat coverage-report.json | gocov report > gocov-report-pr.txt
-{% endhighlight %}
+  {% endhighlight %}
 
 Next, we compare this report with the one from `main`:
 
 {% highlight yaml %}
+
 - name: Download main branch coverage artifact
   uses: dawidd6/action-download-artifact@v2
   with:
-    github_token: ${{ secrets.GITHUB_TOKEN }}
-    workflow: test-main.yaml
-    workflow_conclusion: success
-    name: coverage-report
-    path: ./main-coverage
+  github_token: ${{ secrets.GITHUB_TOKEN }}
+  workflow: test-main.yaml
+  workflow_conclusion: success
+  name: coverage-report
+  path: ./main-coverage
 
 - name: Run gocov report for main branch
   run: cat main-coverage/coverage-report.json | gocov report > gocov-report-main.txt
@@ -106,19 +109,18 @@ Next, we compare this report with the one from `main`:
 - name: Get overall coverage percentage for main branch
   id: main_coverage
   run: |
-    mainPercentage=$(grep 'Total Coverage' gocov-report-main.txt | awk '{print $3}')
+  mainPercentage=$(grep 'Total Coverage' gocov-report-main.txt | awk '{print $3}')
     echo "main_percentage=$mainPercentage" | tee -a $GITHUB_OUTPUT
-{% endhighlight %}
+  {% endhighlight %}
 
 Finally, we create a PR comment that shows whether the test coverage has increased or decreased:
 
 {% highlight yaml %}
 comment_on_pr:
-  runs-on: ubuntu-latest
-  needs: test
-  steps:
-    - env:
-        MAIN_PERCENTAGE: ${{needs.test.outputs.main_percentage}}
+runs-on: ubuntu-latest
+needs: test
+steps: - env:
+MAIN_PERCENTAGE: ${{needs.test.outputs.main_percentage}}
         PR_PERCENTAGE: ${{needs.test.outputs.pr_percentage}}
     uses: actions/github-script@v6.4.1
     with:
@@ -141,27 +143,27 @@ comment_on_pr:
             });
         const coverageComment = comments.data.find(comment => comment.body.startsWith("# Test Coverage Report"));
         if (prCoverage !== 0 && prCoverage !== mainCoverage) {
-            commentBody = `# Test Coverage Report\n\nBase: **${mainCoverage.toFixed(2)}%** // Head: **${prCoverage.toFixed(2)}%** // ${coverageDifference > 0 ? 'Increases' : 'Decreases'} project coverage by **${coverageDifference.toFixed(2)}%** ${coverageEmoji}\n\n> :bar_chart: View full report locally by running \`just test && go tool cover -html=coverage.out\``;  
-            if (coverageComment) {
-            github.rest.issues.updateComment({
-                ...context.repo,
-                comment_id: coverageComment.id,
-                body: commentBody
-            });
-            } else {
-            github.rest.issues.createComment({
-                ...context.repo,
-                issue_number,
-                body: commentBody
-            });
-            }
-        } else if (coverageComment) {
-            // If the coverage is equal and a coverage comment exists, delete the comment
-            github.rest.issues.deleteComment({
-            ...context.repo,
-            comment_id: coverageComment.id
-            });
-        }
+            commentBody = `# Test Coverage Report\n\nBase: **${mainCoverage.toFixed(2)}%** // Head: **${prCoverage.toFixed(2)}%** // ${coverageDifference > 0 ? 'Increases' : 'Decreases'} project coverage by **${coverageDifference.toFixed(2)}%\*\* ${coverageEmoji}\n\n> :bar_chart: View full report locally by running \`just test && go tool cover -html=coverage.out\``;  
+ if (coverageComment) {
+github.rest.issues.updateComment({
+...context.repo,
+comment_id: coverageComment.id,
+body: commentBody
+});
+} else {
+github.rest.issues.createComment({
+...context.repo,
+issue_number,
+body: commentBody
+});
+}
+} else if (coverageComment) {
+// If the coverage is equal and a coverage comment exists, delete the comment
+github.rest.issues.deleteComment({
+...context.repo,
+comment_id: coverageComment.id
+});
+}
 {% endhighlight %}
 
 ## Automating Test Coverage Reporting for React
@@ -172,21 +174,21 @@ For React projects, the approach is similar, but we use Jest’s built-in covera
 
 {% highlight yaml %}
 on:
-  push:
-    branches:
-      - main
+push:
+branches: - main
 {% endhighlight %}
 
 {% highlight yaml %}
+
 - name: Run tests with coverage
   run: yarn test --coverage
 
 - name: Upload coverage report
   uses: actions/upload-artifact@v2
   with:
-    name: coverage-report
-    path: ./coverage/coverage-summary.json
-{% endhighlight %}
+  name: coverage-report
+  path: ./coverage/coverage-summary.json
+  {% endhighlight %}
 
 ### Setting Up the `test-pr.yml` File
 
@@ -194,56 +196,57 @@ The `test-pr.yml` file for React projects follows a similar structure to the Go 
 
 {% highlight yaml %}
 test:
-  runs-on: ubuntu-latest
+runs-on: ubuntu-latest
 
-  outputs:
-    main_percentage: ${{ steps.main_coverage.outputs.main_percentage }}
-    pr_percentage: ${{ steps.pr_coverage.outputs.pr_percentage }}
+outputs:
+main_percentage: ${{ steps.main_coverage.outputs.main_percentage }}
+pr_percentage: ${{ steps.pr_coverage.outputs.pr_percentage }}
 {% endhighlight %}
 
 {% highlight yaml %}
+
 - name: Get coverage for PR branch
   id: pr_coverage
   run: |
-    if [ -f coverage/coverage-summary.json ]; then
-      prPercentage=$(node -e "const coverage = require('./coverage/coverage-summary.json'); console.log(coverage.total.lines.pct);")
+  if [ -f coverage/coverage-summary.json ]; then
+  prPercentage=$(node -e "const coverage = require('./coverage/coverage-summary.json'); console.log(coverage.total.lines.pct);")
       echo "pr_percentage=$prPercentage" | tee -a $GITHUB_OUTPUT
-    else
-      echo "PR branch coverage report not found, setting coverage to 0"
-      echo "pr_percentage=0" | tee -a $GITHUB_OUTPUT
-    fi
-{% endhighlight %}
+  else
+  echo "PR branch coverage report not found, setting coverage to 0"
+  echo "pr_percentage=0" | tee -a $GITHUB_OUTPUT
+  fi
+  {% endhighlight %}
 
 {% highlight yaml %}
+
 - name: Download main branch coverage artifact
   uses: dawidd6/action-download-artifact@v2
   with:
-    workflow: update-test-coverage.yml
-    workflow_conclusion: success
-    name: coverage-report
-    path: ./main-coverage
+  workflow: update-test-coverage.yml
+  workflow_conclusion: success
+  name: coverage-report
+  path: ./main-coverage
 
 - name: Get coverage for main branch
   id: main_coverage
   run: |
-    if [ -f main-coverage/coverage-summary.json ]; then
-      mainPercentage=$(node -e "const coverage = require('./main-coverage/coverage-summary.json'); console.log(coverage.total.lines.pct);")
+  if [ -f main-coverage/coverage-summary.json ]; then
+  mainPercentage=$(node -e "const coverage = require('./main-coverage/coverage-summary.json'); console.log(coverage.total.lines.pct);")
       echo "main_percentage=$mainPercentage" | tee -a $GITHUB_OUTPUT
-    else
-      echo "Main branch coverage report not found, setting coverage to 0"
-      echo "main_percentage=0" | tee -a $GITHUB_OUTPUT
-    fi
-{% endhighlight %}
+  else
+  echo "Main branch coverage report not found, setting coverage to 0"
+  echo "main_percentage=0" | tee -a $GITHUB_OUTPUT
+  fi
+  {% endhighlight %}
 
 Finally, we create a comment on the PR similar to the Go setup:
 
 {% highlight yaml %}
 comment_on_pr:
-  runs-on: ubuntu-latest
-  needs: test
-  steps:
-    - env:
-        MAIN_PERCENTAGE: ${{needs.test.outputs.main_percentage}}
+runs-on: ubuntu-latest
+needs: test
+steps: - env:
+MAIN_PERCENTAGE: ${{needs.test.outputs.main_percentage}}
         PR_PERCENTAGE: ${{needs.test.outputs.pr_percentage}}
     uses: actions/github-script@v6.4.1
     with:
@@ -266,29 +269,28 @@ comment_on_pr:
             });
         const coverageComment = comments.data.find(comment => comment.body.startsWith("# Test Coverage Report"));
         if (prCoverage !== 0 && prCoverage !== mainCoverage) {
-            commentBody = `# Test Coverage Report\n\nBase: **${mainCoverage.toFixed(2)}%** // Head: **${prCoverage.toFixed(2)}%** // ${coverageDifference > 0 ? 'Increases' : 'Decreases'} project coverage by **${coverageDifference.toFixed(2)}%** ${coverageEmoji}\n\n> :bar_chart: View full report locally by running \`yarn coverage:report\``;  
-            if (coverageComment) {
-            github.rest.issues.updateComment({
-                ...context.repo,
-                comment_id: coverageComment.id,
-                body: commentBody
-            });
-            } else {
-            github.rest.issues.createComment({
-                ...context.repo,
-                issue_number,
-                body: commentBody
-            });
-            }
-        } else if (coverageComment) {
-            // If the coverage is equal and a coverage comment exists, delete the comment
-            github.rest.issues.deleteComment({
-            ...context.repo,
-            comment_id: coverageComment.id
-            });
-        }
+            commentBody = `# Test Coverage Report\n\nBase: **${mainCoverage.toFixed(2)}%** // Head: **${prCoverage.toFixed(2)}%** // ${coverageDifference > 0 ? 'Increases' : 'Decreases'} project coverage by **${coverageDifference.toFixed(2)}%\*\* ${coverageEmoji}\n\n> :bar_chart: View full report locally by running \`yarn coverage:report\``;  
+ if (coverageComment) {
+github.rest.issues.updateComment({
+...context.repo,
+comment_id: coverageComment.id,
+body: commentBody
+});
+} else {
+github.rest.issues.createComment({
+...context.repo,
+issue_number,
+body: commentBody
+});
+}
+} else if (coverageComment) {
+// If the coverage is equal and a coverage comment exists, delete the comment
+github.rest.issues.deleteComment({
+...context.repo,
+comment_id: coverageComment.id
+});
+}
 {% endhighlight %}
-
 
 ## Conclusion
 
