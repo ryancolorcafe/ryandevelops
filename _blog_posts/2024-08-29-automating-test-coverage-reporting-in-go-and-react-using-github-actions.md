@@ -164,6 +164,10 @@ comment_on_pr:
           }
 {% endhighlight %}
 
+Here's an example of what the comment might look like:
+
+![Example of PR Comment Showing Test Coverage Impact](../assets/images/test-coverage-report-negative.png)
+
 ## Automating Test Coverage Reporting for React
 
 ### Setting Up the `test-main.yml` File
